@@ -25,4 +25,4 @@ for rsync in config['rsyncs']:
     user = rsync['user']
     hostname = rsync['hostname']
     dst_path = rsync['dst_path']
-    invoke(f'rsync -r {src_path} {user}@{hostname}:{dst_path}', check=False)
+    invoke(f'rsync -r --delete {src_path} {user}@{hostname}:{dst_path}', check=False)
