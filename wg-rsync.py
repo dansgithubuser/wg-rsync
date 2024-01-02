@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import atexit
+from datetime import datetime, timezone
 import json
 import os
 import subprocess
@@ -21,8 +22,22 @@ with open('config.json') as f:
 invoke(config['wg_up_cmd'])
 atexit.register(lambda: invoke(config['wg_down_cmd']))
 for rsync in config['rsyncs']:
+    name = rsync['name']
     src_path = rsync['src_path']
     user = rsync['user']
     hostname = rsync['hostname']
     dst_path = rsync['dst_path']
-    invoke(f'rsync -r --delete {src_path} {user}@{hostname}:{dst_path}', check=False)
+    p = invoke(
+        f'rsync -v -r --delete {src_path} {user}@{hostname}:{dst_path}',
+        check=False,
+        capture_output=True,
+    )
+    with open(f'{name}-status.json', 'w') as f:
+        json.dump(
+            {
+                'name': name,
+                'date': datetime.now(timezone.utc).isoformat(' ', 'seconds'),
+                'stdout': p.stdout.decode(),
+            },
+            f,
+        )
